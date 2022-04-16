@@ -25,14 +25,14 @@ class ViewController: UIViewController {
       .map(Double.init)
       .map { $0 / Double(Color.gradientColors.count) }
       .map(NSNumber.init)
-    static let cornerRadius = 30.0
-    static let cornerWidth = 10.0
+    static let cornerRadius = 40.0
+    static let cornerWidth = 2.0
     static let viewSize = CGSize(width: 100, height: 350)
   }
   
   private lazy var sampleView: UIView = {
     let view = UIView()
-    view.backgroundColor = .systemGray
+    view.backgroundColor = .clear
     view.layer.cornerRadius = Constants.cornerRadius
     view.translatesAutoresizingMaskIntoConstraints = false
     self.view.addSubview(view)
@@ -41,11 +41,18 @@ class ViewController: UIViewController {
   private lazy var infoLabel: UILabel = {
     let label = UILabel()
     label.text = "border 애니메이션 예제"
-    label.textColor = .white
+    label.textColor = .black
     label.translatesAutoresizingMaskIntoConstraints = false
     self.sampleView.addSubview(label)
     return label
   }()
+  
+  private var timer: Timer?
+
+  deinit {
+    self.timer?.invalidate()
+    self.timer = nil
+  }
   
   override func viewDidLoad() {
     super.viewDidLoad()
@@ -72,7 +79,7 @@ class ViewController: UIViewController {
     // 1. 경계선에만 색상을 넣기 위해서 CAShapeLayer 인스턴스 생성
     let shape = CAShapeLayer()
     shape.path = UIBezierPath(
-      roundedRect: self.sampleView.bounds,
+      roundedRect: self.sampleView.bounds.insetBy(dx: Constants.cornerWidth, dy: Constants.cornerWidth),
       cornerRadius: self.sampleView.layer.cornerRadius
     ).cgPath
     shape.lineWidth = Constants.cornerWidth
@@ -93,7 +100,8 @@ class ViewController: UIViewController {
     self.sampleView.layer.addSublayer(gradient)
     
     // 3. 매 0.2초마다 마치 circular queue처럼 색상을 번갈아서 바뀌도록 구현
-    Timer.scheduledTimer(withTimeInterval: 0.2, repeats: true) { _ in
+    self.timer?.invalidate()
+    self.timer = Timer.scheduledTimer(withTimeInterval: 0.2, repeats: true) { _ in
       gradient.removeAnimation(forKey: "myAnimation")
       let previous = Color.gradientColors.map(\.cgColor)
       let last = Color.gradientColors.removeLast()
